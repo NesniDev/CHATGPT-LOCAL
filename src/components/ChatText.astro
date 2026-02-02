@@ -12,11 +12,11 @@ const { who, message } = Astro.props
   class={`${who === 'GPT' ? 'self-start items-start' : 'self-end items-end'} flex flex-col gap-1 my-1 py-1 px-2`}
 >
   <span
-    class={`${who === 'GPT' ? 'bg-black text-white' : 'bg-blue-200'} p-5 size-8 font-bold flex justify-center items-center rounded-full`}
+    class={`${who === 'GPT' ? 'bg-black text-white' : 'bg-blue-200'} p-4 size-5 text-[10px] font-bold flex justify-center items-center rounded-full`}
     >{who}</span
   >
   <p
-    class={`${who === 'GPT' ? 'bg-black/80 text-white' : 'bg-blue-100/80'} rounded-sm px-1`}
+    class={`${who === 'GPT' ? 'bg-black/80 text-white' : 'bg-blue-100/80'} rounded-sm text-sm px-1`}
   >
     {message}
   </p>
