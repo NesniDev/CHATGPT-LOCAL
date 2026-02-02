@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro'
+import ChatText from './ChatText.astro'
+---
+
+<Layout>
+  <main
+    class="w-96 max-w-full h-[60vh] bg-gray-200 border-2 rounded-lg p-8 shadow-gray-100 shadow-lg mb-8 overflow-hidden"
+  >
+    <ul class="flex flex-col p-0">
+      <ChatText who="GPT" message="Este es el mensaje del bot" />
+      <ChatText who="USER" message="Este es el mensaje del usuario" />
+      <ChatText
+        who="USER"
+        message="Esta es la respuesta del usuario y es uuna respuesta larga para ver que no se rompe nada"
+      />
+    </ul>
+  </main>
+  <form class="flex gap-2">
+    <input
+      type="text"
+      placeholder="Escribe tu mensaje..."
+      class="rounded-lg flex-1 text-white border-2 border-gray-900 p-2 placeholder:text-white"
+    />
+    <button
+      class="py-2 px-4 bg-green-500 rounded-lg font-semibold hover:bg-green-500/80 transition cursor-pointer"
+      >Enviar</button
+    >
+  </form>
+  <template id="template-message">
+    <span>Tu</span>
+    <span
+      >Esta es la respuesta del usuario y es uuna respuesta larga para ver que
+      no se rompe nada</span
+    >
+  </template>
+</Layout>
