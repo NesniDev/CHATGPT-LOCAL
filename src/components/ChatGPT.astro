@@ -57,7 +57,15 @@ import ChatText from './ChatText.astro'
     content: string
   }
 
-  let messages: Message[] = []
+  let messages: Message[] = [
+    {
+      role: 'system',
+      content: `Eres un asistente virtual que:
+              - Responde SIEMPRE en español.
+              - Usa un tono formal y educativo.
+z              `
+    }
+  ]
   const SELECTED_MODEL = 'Hermes-3-Llama-3.2-3B-q4f16_1-MLC'
 
   // Initialize with a progress callback
