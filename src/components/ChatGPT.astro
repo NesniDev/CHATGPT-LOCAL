@@ -5,24 +5,18 @@ import ChatText from './ChatText.astro'
 
 <Layout>
   <main
-    class="w-96 max-w-full h-[60vh] bg-gray-200 border-2 rounded-lg p-8 shadow-gray-100 shadow-lg mb-8 overflow-y-auto scroll-smooth"
+    class="w-96 max-w-full h-[70vh] bg-gray-200 border-2 rounded-lg p-8 shadow-gray-100 shadow-lg mb-8 overflow-y-auto scroll-smooth"
   >
-    <ul class="flex flex-col p-0">
-      <ChatText who="GPT" message="Este es el mensaje del bot" />
-      <ChatText who="USER" message="Este es el mensaje del usuario" />
-      <ChatText
-        who="USER"
-        message="Esta es la respuesta del usuario y es uuna respuesta larga para ver que no se rompe nada"
-      />
-    </ul>
+    <ul class="flex flex-col p-0"></ul>
   </main>
   <form class="flex gap-2">
     <input
       type="text"
       placeholder="Escribe tu mensaje..."
-      class="rounded-lg flex-1 text-white border-2 border-gray-900 p-2 placeholder:text-white"
+      class="bg-white/10 rounded-lg flex-1 text-white border-2 border-gray-900 p-2 placeholder:text-white"
     />
     <button
+      disabled
       class="py-2 px-4 bg-green-500 rounded-lg font-semibold hover:bg-green-500/80 transition cursor-pointer disabled:opacity-35"
       >Enviar</button
     >
@@ -35,9 +29,15 @@ import ChatText from './ChatText.astro'
       <p class="text rounded-sm px-1"></p>
     </li>
   </template>
+
+  <small class="text-white/70 mt-10 text-sm w-72 mx-auto text-center"
+    >&nbsp;Cargando modelo...</small
+  >
 </Layout>
 
 <script>
+  import { CreateMLCEngine } from '@mlc-ai/web-llm'
+
   const $form = document.querySelector<HTMLFormElement>('form')!
   const $input = document.querySelector<HTMLInputElement>('input')!
   const $template =
@@ -45,21 +45,77 @@ import ChatText from './ChatText.astro'
   const $messages = document.querySelector<HTMLUListElement>('ul')!
   const $container = document.querySelector<HTMLDivElement>('main')!
   const $button = document.querySelector<HTMLButtonElement>('button')!
+  const $small = document.querySelector<HTMLDivElement>('small')!
 
-  $form?.addEventListener('submit', (e) => {
+  // ---------------------------
+
+  interface Message {
+    role: string
+    content: string
+  }
+
+  let messages: Message[] = []
+  const SELECTED_MODEL = 'Llama-3-8B-Instruct-q4f32_1-MLC-1k'
+
+  // Initialize with a progress callback
+  const initProgressCallback = (info: { progress: number; text: any }) => {
+    console.log('Model loading progress:', info.progress)
+    $small.textContent = `${info.text}`
+    if (info.progress === 1) {
+      // $small.textContent = 'Modelo cargado correctamente'
+      $button.removeAttribute('disabled')
+    }
+  }
+
+  // Using CreateMLCEngine
+  const engine = await CreateMLCEngine(SELECTED_MODEL, {
+    initProgressCallback
+  })
+
+  // Direct instantiation
+  // const engineInstance = new MLCEngine({ initProgressCallback })
+  // await engineInstance.reload(SELECTED_MODEL)
+
+  // ---------------------------
+
+  $form?.addEventListener('submit', async (e) => {
     e.preventDefault()
 
     const messageText = $input.value.trim()
     if (messageText !== '') {
       $input.value = ''
     }
-    if (messageText === '') return
 
     addMessage(messageText, 'USER')
 
-    setTimeout(() => {
-      addMessage('Este es un mensaje de prueba del bot', 'GPT')
-    }, 2000)
+    const userMessage = {
+      role: 'user',
+      content: messageText
+    }
+
+    messages.push(userMessage)
+
+    const chunks = await engine.chat.completions.create({
+      //@ts-ignore
+      messages,
+      stream: true
+    })
+
+    let reply = ''
+    const textChunk = addMessage('', 'GPT')
+
+    for await (const chunk of chunks) {
+      const [choice] = chunk.choices
+      const content = choice.delta.content ?? ''
+      reply += content
+      textChunk.textContent = reply
+    }
+
+    messages.push({
+      role: 'assistant',
+      content: reply
+    })
+    $container.scrollTop = $container.scrollHeight
   })
 
   const addMessage = (text: string, sender: 'USER' | 'GPT') => {
@@ -84,5 +140,7 @@ import ChatText from './ChatText.astro'
 
     $messages.appendChild($newMessage)
     $container.scrollTop = $container.scrollHeight
+
+    return $text
   }
 </script>
